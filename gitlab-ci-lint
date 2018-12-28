@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -e
+
+if [[ $(ls $1) ]]; then
+    INPUT=$(cat $1)
+else
+    INPUT=$(</dev/stdin)
+fi
+
+CONTENT=$(echo "$INPUT" | yq '.' | tr -d '\n' | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
+RESPONSE=$(curl --header "Content-Type: application/json" https://gitlab.com/api/v4/ci/lint --data "{\"content\": $CONTENT}")
+STATUS=$(echo $RESPONSE | jq -r '.status')
+
+if [[ $STATUS == 'valid' ]]; then
+    echo "configuration is valid"
+    exit 0
+elif [[ $STATUS == 'invalid' ]]; then
+    echo "configuration is invalid"
+    echo $RESPONSE | jq '.errors'
+    exit -1
+else
+    echo "configuration is invalid, unknown status '$STATUS'"
+    exit -2
+fi
+
