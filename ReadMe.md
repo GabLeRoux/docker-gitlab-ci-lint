@@ -44,7 +44,7 @@ test-ci-file:
 
 ### Why?
 
-I wrote some project generators using [cookiecutter](https://github.com/audreyr/cookiecutter) and I wanted to lint its generated `.gitlab-ci` so I know when I break things.
+I wrote some project generators using [cookiecutter](https://github.com/audreyr/cookiecutter) and managed to generate `.gitlab-ci.yml` files so I wanted to lint them in the ci to know when I break things.
 
 ### Is this safe?
 
