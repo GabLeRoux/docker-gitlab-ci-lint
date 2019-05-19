@@ -9,7 +9,10 @@ else
 fi
 
 CONTENT=$(echo "$INPUT" | yq '.' | tr -d '\n' | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
-RESPONSE=$(curl --header "Content-Type: application/json" https://gitlab.com/api/v4/ci/lint --data "{\"content\": $CONTENT}")
+RESPONSE=$(curl --header "Content-Type: application/json" https://gitlab.com/api/v4/ci/lint --data @- <<CURL_DATA
+{"content": $CONTENT}
+CURL_DATA
+)
 STATUS=$(echo $RESPONSE | jq -r '.status')
 
 if [[ $STATUS == 'valid' ]]; then
