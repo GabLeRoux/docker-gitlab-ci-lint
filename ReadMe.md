@@ -47,7 +47,7 @@ gitlab-ci-lint () {
 }
 ```
 
-This way, you go in a project and type `gitlab-ci-lint`. :tada:
+This way, you go in a project and type `gitlab-ci-lint` or `gitlab-ci-lint custom-gitlab-ci-file.yml`. :tada:
 
 ## FAQ
 
