@@ -39,6 +39,15 @@ test-ci-file:
   - gitlab-ci-lint .gitlab-ci.yml
 ```
 
+### Handy function for your shell
+
+```bash
+gitlab-ci-lint () {
+	cat ${1:-.gitlab-ci.yml} | docker run --rm -i gableroux/gitlab-ci-lint
+}
+```
+
+This way, you go in a project and type `gitlab-ci-lint`. :tada:
 
 ## FAQ
 
