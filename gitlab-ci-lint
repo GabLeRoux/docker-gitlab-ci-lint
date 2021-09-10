@@ -2,12 +2,22 @@
 
 set -e
 
-GITLAB_CI_FILE=${1:-${GITLAB_CI_FILE:-".gitlab-ci.yml"}}
-GITLAB_TOKEN=${2:-$GITLAB_TOKEN}
-GITLAB_API_URL=${3:-${GITLAB_API_URL:-"https://gitlab.com/api/v4"}}
+if [[ $(ls "$1" 2>/dev/null) ]]; then
+  INPUT=$(cat "$1")
+elif test ! -t 0; then # "stdin has data"
+  INPUT=$(</dev/stdin)
+elif [[ $(ls ".gitlab-ci.yml" 2>/dev/null) ]]; then
+  INPUT=$(cat ".gitlab-ci.yml")
+else
+  echo ".gitlab-ci.yml not found"
+  exit 3
+fi
+
+GITLAB_API_URL=${2:-${GITLAB_API_URL:-"https://gitlab.com/api/v4"}}
+GITLAB_TOKEN=${3:-${GITLAB_TOKEN:-$CI_JOB_TOKEN}}
 
 RESPONSE=$(
-  jq --null-input --arg yaml "$(<"${GITLAB_CI_FILE}")" '.content=$yaml' \
+  jq --null-input --arg yaml "$INPUT" '.content=$yaml' \
    | curl -s "${GITLAB_API_URL}/ci/lint" \
       --header 'Content-Type: application/json' \
       --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \

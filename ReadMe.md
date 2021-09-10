@@ -17,33 +17,46 @@ Inspired by [this gist](https://gist.github.com/Betree/56f9669c3adb2a1633429ff32
 ### Docker image
 
 ```bash
-cat .gitlab-ci.yml | docker run --rm -i gableroux/gitlab-ci-lint
+cat .gitlab-ci.yml | docker run --rm -i gableroux/gitlab-ci-lint:v1.0.0
 ```
 
 ### Shell script
 
-You'll need to install dependencies first if you go this way.
+You'll need [`yq`](https://github.com/mikefarah/yq) and `gitlab-ci-lint` in your `$PATH` (you can clone this project and link to it too).
 
 ```bash
 cat .gitlab-ci.yml | ./gitlab-ci-lint
 # or
 ./gitlab-ci-lint .gitlab-ci.yml
+# or
+./gitlab-ci-lint
 ```
 
-### `.gitlab-ci.yml`
+### in your CI pipeline (`.gitlab-ci.yml`)
+
+```yaml
+test-ci-file:
+  image: gableroux/gitlab-ci-lint:v1.0.0
+  script:
+  - gitlab-ci-lint example.gitlab-ci.yml
+```
+
+### gitlab token subject
+
+You can set `$CI_JOB_TOKEN` or `$GITLAB_TOKEN` environment variable before invoking the script.
+You can also pass it as a 3rd parameter. Example:  
 
 ```bash
-test-ci-file:
-  image: gableroux/gitlab-ci-lint
-  script:
-  - gitlab-ci-lint .gitlab-ci.yml
+./gitlab-ci-lint .gitlab-ci.yml https://gitlab.com/api/v4 EXAMPLE_TOKEN
 ```
+
+But using a secret token directly in a shell is unsafe and should be avoided as it will be written to your shell history.
 
 ### Handy function for your shell
 
 ```bash
 gitlab-ci-lint () {
-	cat ${1:-.gitlab-ci.yml} | docker run --rm -i gableroux/gitlab-ci-lint
+	cat ${1:-.gitlab-ci.yml} | docker run --rm -i gableroux/gitlab-ci-lint:v1.0.0
 }
 ```
 
@@ -53,7 +66,7 @@ This way, you go in a project and type `gitlab-ci-lint` or `gitlab-ci-lint custo
 
 ### Why?
 
-I wrote some project generators using [cookiecutter](https://github.com/audreyr/cookiecutter) and managed to generate `.gitlab-ci.yml` files so I wanted to lint them in the ci to know when I break things.
+I wrote some project generators using [cookiecutter](https://github.com/audreyr/cookiecutter) and managed to generate `.gitlab-ci.yml` files. I wanted to lint them in the ci to know when I break things.
 
 ### Is this safe?
 
@@ -62,6 +75,11 @@ You should not execute things from the internets, read your scripts before execu
 ### Can I contribute
 
 Yeah why not? Feel this can be improved? Fork and send a PR. :tada:
+
+### Alternatives
+
+* https://www.npmjs.com/package/gitlab-ci-lint
+* https://gitlab.com/orobardet/gitlab-ci-linter
 
 ## License
 
