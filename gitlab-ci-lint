@@ -2,37 +2,26 @@
 
 set -e
 
-if [[ $(ls $1) ]]; then
-    INPUT=$(cat $1)
-else
-    INPUT=$(</dev/stdin)
-fi
+GITLAB_CI_FILE=${1:-${GITLAB_CI_FILE:-".gitlab-ci.yml"}}
+GITLAB_TOKEN=${2:-$GITLAB_TOKEN}
+GITLAB_API_URL=${3:-${GITLAB_API_URL:-"https://gitlab.com/api/v4"}}
 
-if [ "x$CI_API_V4_URL" != "x" ] ; then
-    # if we're running as a CI job, pick the provided API base url unless
-    # overridden
-    GITLAB_API_URL="${GITLAB_API_URL:-$CI_API_V4_URL}"
-else
-    # otherwise, use gitlab.com's API URL unless overridden
-    GITLAB_API_URL="${GITLAB_API_URL:-https://gitlab.com/api/v4}"
-fi
-
-CONTENT=$(echo "$INPUT" | yq '.' | tr -d '\n' | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
-RESPONSE=$(curl --header "Content-Type: application/json" $GITLAB_API_URL/ci/lint --data @- <<CURL_DATA
-{"content": $CONTENT}
-CURL_DATA
+RESPONSE=$(
+  jq --null-input --arg yaml "$(<"${GITLAB_CI_FILE}")" '.content=$yaml' \
+   | curl -s "${GITLAB_API_URL}/ci/lint" \
+      --header 'Content-Type: application/json' \
+      --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+      --data @-
 )
-STATUS=$(echo $RESPONSE | jq -r '.status')
+
+echo "$RESPONSE"
+
+STATUS=$(echo "$RESPONSE" | jq -r '.status')
 
 if [[ $STATUS == 'valid' ]]; then
-    echo "configuration is valid"
     exit 0
 elif [[ $STATUS == 'invalid' ]]; then
-    echo "configuration is invalid"
-    echo $RESPONSE | jq '.errors'
-    exit -1
+    exit 1
 else
-    echo "configuration is invalid, unknown status '$STATUS'"
-    exit -2
+    exit 2
 fi
-
