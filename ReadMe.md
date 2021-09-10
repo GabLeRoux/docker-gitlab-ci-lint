@@ -34,6 +34,8 @@ cat .gitlab-ci.yml | ./gitlab-ci-lint
 
 ### in your CI pipeline (`.gitlab-ci.yml`)
 
+Note: until [this gets fixed by gitlab](https://gitlab.com/gitlab-org/gitlab/-/issues/336666), you need to go set an actual valid `GITLAB_TOKEN` with `ci/lint` access in your variables. `CI_JOB_TOKEN` currently doesn't have the right to access this endpoint.
+
 ```yaml
 test-ci-file:
   image: gableroux/gitlab-ci-lint:v1.0.0
