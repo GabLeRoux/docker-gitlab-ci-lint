@@ -41,16 +41,23 @@ test-ci-file:
   - gitlab-ci-lint example.gitlab-ci.yml
 ```
 
+Note: a gitlab-ci job will automatically set `$CI_JOB_TOKEN` which is now required by [`/ci/lint` gitlab api](https://docs.gitlab.com/ce/api/lint.html).
+
 ### gitlab token subject
 
-You can set `$CI_JOB_TOKEN` or `$GITLAB_TOKEN` environment variable before invoking the script.
+You can set `$CI_JOB_TOKEN` or `$GITLAB_TOKEN` environment variable before invoking the script. 
+
+```bash
+GITLAB_TOKEN=EXAMPLE_TOKEN ./gitlab-ci-lint
+```
+
 You can also pass it as a 3rd parameter. Example:  
 
 ```bash
 ./gitlab-ci-lint .gitlab-ci.yml https://gitlab.com/api/v4 EXAMPLE_TOKEN
 ```
 
-But using a secret token directly in a shell is unsafe and should be avoided as it will be written to your shell history.
+:warning: Using a secret token directly in a shell command is unsafe and should be avoided as it will be written to your shell history. A workaround is to create your own script, write the command in that script and invoke the script. Or you could also set this secret from your `.bashrc` file.
 
 ### Handy function for your shell
 
